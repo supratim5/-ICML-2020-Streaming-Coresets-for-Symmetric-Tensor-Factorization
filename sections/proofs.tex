@@ -1,0 +1,89 @@
+\section{Proofs}{\label{sec:proofs}}
+Here we state the supporting lemmas to prove our main theorems. We give a sketches of proof for some lemmas. The proofs are discussed in detail in the appendix~\ref{sec:appendix}.
+\subsection{\online}
+Here we give sketch of the proof for theorem \ref{thm:Online}. For ease of notation, the rows are considered numbered according to their order of arrival. The supporting lemmas are for the online setting which also work for the streaming case.
+% When the $i^{th}$ row arrives, the algorithm has to decide whether to select it or not. 
+% Clearly, at any intermediate step, we cannot compute the offline sensitivity scores. 
+We show that it is possible to generalize the notion of sensitivity for the online setting as well as give an upper bound to it. We define the {\em online sensitivity} of any $i^{th}$ row as : $\sup_{\*x\in \*Q}\frac{|\*a_{i}^T\*x|^{p}}{\sum_{j=1}^{i}|\mathbf{a_{j}}^T\*x|^{p}} = 
+\sup_{\*y\in \*Q'}\frac{|\*u_{i}^T\*y|^{p}}{\sum_{j=1}^{i}|\*u_{j}^T\*y|^{p}}$,
+where $\*Q'= \{\*y| \*y = \Sigma \*V^T \*x, \*x\in \*Q\}$ and svd$(\*A) = \*U\Sigma \*V^{T}$. Notice that the denominator now contains a sum only over the rows that have arrived. 
+We note that while online sampling results often need the use of martingales as an analysis tool, e.g.~\cite{cohen2016online}, in our setting, the sampling probability of each row does depend on the previous rows, but not on whether they were sampled or not. The sampling decision
+of each row is independent. Hence, the application of Bernstein theorem~\ref{thm:bernstein} suffices.
+
+We first show that the sampling of the incoming rows using $p_{i}$'s defined in \online, are upper bounds to the online sensitivity scores. 
+% 
+\begin{lemma}{\label{lemma:onlineSensitivityBound}}
+ Consider $\*A \in \~R^{n \times d}$, whose rows are provided in an online manner to \online. Let $\tilde{l}_i = \min\{i^{p/2-1}(\*a_{i}^T\*M^{\dagger}\*a_{i})^{p/2},1\}$, and $\*M$ is a $d \times d$ matrix maintained by the algorithm. Then $\forall i \in [n]$,  $\tilde{l}_i$ satisfies $\tilde{l}_i \ge \sup_{\*x}\frac{|\*a_{i}^T\*x|^{p}}{\sum_{j=1}^{i}|\mathbf{a_{j}}^T\*x|^{p}}$.     
+  %Here $\*u_{i}$ is the $i^{th}$ row of the orthonormal column space basis $\U$ of $A$.
+\end{lemma}
+The proof of this lemma is discussed in the appendix~\ref{proof:onlineSensitivityBound}. Although the $\tilde{l}_{i}$'s are computed very quickly but the algorithm gives a loose upper bound due to an extra charge of factor $i^{p/2-1}$. As $i$ increases the charge in each $\tilde{l}_{i}$ also increases. Now using these upper bounds help us prove the following result.
+\begin{lemma}{\label{lemma:onlineGuarantee}}
+Let $r$ provided to \online~be 
+$(2k\sum_{j=1}^{n}\tilde{l}_{j})/\epsilon^{2}$. Let \online~return a coreset $\*C$. Then with probability at least 0.9, $\forall \*x \in \*Q$, 
+$\*C$ satisfies the tensor contraction as in equation \eqref{eq:contract} and $\ell_{p}$ subspace embedding as in equation \eqref{eq:lp}.
+% \begin{align*}
+%     \big| \sum_{\mathbf{\hat{a}_i}\in \*C} (\mathbf{\hat{a}_i}^T \*x)^p - \sum_{i\le n} (\*a_{i}^T \*x)^p \big| \le  \epsilon \sum_{i\le n} |\*a_{i}^T \*x|^p.
+% \end{align*}
+\end{lemma}
+The proof of this lemma is given in the appendix~\ref{proof:onlineGuarantee}. 
+%The above result is for fixed $y$. It is not difficult to see that applying an $\epsilon-$net argument similar to the one as in the online setting we can achieve the guarantees of (eqn \ref{eqn:offlineGuarantee}), with $O\big(\frac{k\sum_{j=1}^{n}\tilde{l}_{j}} {\epsilon^{2}} \log(2/\epsilon)\log(1/\delta)\big)$ sampled rows.
+% 
+%Define the random variables $W_{i} = \{\frac{1}{p_{i}}(\*u_{i}^Ty)^{p} \mbox{ w.p. }p_{i}, 0 \mbox{ w.p. }(1-p_{i})\}$ with $p_{i}$'s as the ones defined in algorithm \ref{alg:onlineCoreset}. We have $E[W_i] = (\*u_{i}^Ty)^{p}$. We show that $\sum_i W_i$ is concentrated. 
+%\begin{center}
+%    $\mbox{Pr}\big(|\sum_i W_i - \sum_{j=1}^{n} (\mathbf{u_{j}}^Ty)^{p}| \geq \epsilon \sum_{j=1}^{n} |\mathbf{u_{j}}^T\*y|^{p}\big) \leq \exp\Big(\frac{-r\epsilon^{2}}{(1+\epsilon)\sum_{j=1}^{n}\tilde{l}_{j}}\Big)$
+%\end{center}
+% 
+Now in order to bound the number of samples, we need a bound on the quantity $\sum_{j=1}^{n}\tilde{l}_{j}$ which we demonstrate in the following lemma.
+\begin{lemma}{\label{lemma:onlineSummationBound}}
+ %Given the rows of matrix $\*A \in \~R^{n \times d}$, coming in an online manner
+ The $\tilde{l}_{i}$ in \online~algorithm which satisfies lemma \ref{lemma:onlineSensitivityBound} and lemma \ref{lemma:onlineGuarantee} has
+ $\sum_{i=1}^{n}\tilde{l}_{i}=O(n^{1-2/p}(d+d\log \|\*A\| - \min_{i}\log \|\*a_{i}\|)$.
+\end{lemma}
+\begin{proof}{\label{sketch:onlineSummationBound}}
+Here we give a sketch of the proof. The details are discussed in appendix~\ref{proof:onlineSummationBound}. First we bound $\sum_{i<\leq n} \tilde{e}_{i}$, where $\tilde{e}_{i}$ are the scores returned by $OnlineScore()$ (Function~\ref{alg:onineScore}) .
+At time $i$ the algorithm gets $\*a_{i}$ and $\*M = \*A_{i-1}^T\*A_{i-1}$ using which it computes $\tilde{e}_i = \*a_{i}^T(\*A_{i}^T\*A_{i})^{\dagger}\*a_{i}$. 
+With incoming row $\*a_{i}$ the rank of $\*M$ increases 
+from $1$ to at most $d$. We say that the algorithm is
+in phase-$k$ if the rank of $\*M$ equals $k$. For each phase $k \in [1, d-1]$, let $i_k$ denote the index
+where row $\*a_{i_k}$ caused a phase-change in $\*M$ i.e. 
+rank of $(\*A_{i_k-1}^{T} \*A_{i_k-1})$ is $k-1$, but rank of $(\*A_{i_k}^{T} \*A_{i_k})$ is $k$. 
+Note that for each $i_k$, $\tilde{e}_{i_k} = 1$. There are at most $d$ such indices $i_k$.
+% 
+% We now bound the $\sum_{i\in [i_k, i_{k+1}-1]} \tilde{e}_i$. 
+We bound the term $\tilde{e}_{i}, i \in [i_k+1,i_{k+1}-1]$. Suppose the $\mbox{thin-SVD}(\*A_{i_k}^T \*A_{i_k})=\*V\Sigma_{i_k} \*V^T$, all entries in $\Sigma_{i_k}$ being positive. We define $\*X_{i_k} = \*V^T (\*A_{i_k}^T \*A_{i_k}) \*V$, where $\*X_{i_k}$ is positive definite and hence full rank. Now for each $i\in [i_{k}+1, i_{k+1}-1]$ we have $\*a_{i} = \*V \*b_{i}$. We also have $\*X_{i} = \*X_{i-1} + \*b_{i} \*b_{i}^T$. So we have, $\tilde{e}_{i} = \*a_{i}^T(\*A_{i}^T \*A_{i} )^{\dagger}\*a_{i} = \*b_{i}^T\*V^T(\*V(\mathbf{\Sigma_{i-1}}+\*b_{i} \*b_{i}^T)\*V^T)^{\dagger}\*V \*b_{i}=\*b_{i}^T(\*X_{i-1}+\*b_{i}\*b_{i}^T)^{\dagger}\*b_{i} = \*b_{i}^T(\*X_{i-1}+\*b_{i}\*b_{i}^T)^{-1}\*b_{i}$.
+%  
+% % Note that matrix $\mathbf{\Sigma_{i-1}}+\*b_{i}\*b_{i}^T$ is a positive definite and hence a full rank matrix. 
+ Now using the matrix determinant lemma~\cite{vrabel2016note} on % the above term we get,
+ $\mbox{det}(\*X_{i-1}+\*b_{i}\*b_{i}^T)$ we get,
+ \begin{eqnarray*}
+  &=& \mbox{det}(\*X_{i-1})(1+\*b_{i}^T(\*X_{i-1})^{-1}\*b_{i})  \\
+  &\geq& \mbox{det}(\*X_{i-1})(1+\*b_{i}^T(\*X_{i-1}+\*b_{i} \*b_{i}^T)^{-1}\*b_{i})  \\
+  &=& \mbox{det}(\*X_{i-1})(1+\tilde{e}_{i}) \geq \mbox{det}(\*X_{i-1})\exp(\tilde{e}_{i}/2)
+%   \exp(\tilde{e}_{i}/2) &\leq& \frac{\mbox{det}(\*X_{i-1}+\*b_{i}\*b_{i}^T)}{\mbox{det}(\*X_{i-1})} 
+ \end{eqnarray*}
+ So finally we get $\exp(\tilde{e}_{i}/2) \leq \frac{\mbox{det}(\*X_{i-1}+\*b_{i}\*b_{i}^T)}{\mbox{det}(\*X_{i-1})}$. Now computing other $\tilde{e}_{i}$'s and by a careful analysis we get a telescopic sum, which simplifies $\sum_{i\leq n}\tilde{e}_{i} \leq \tilde{e}_{1} - \tilde{e}_{n}$.
+\end{proof}
+With lemmas~\ref{lemma:onlineSensitivityBound}, \ref{lemma:onlineGuarantee} and \ref{lemma:onlineSummationBound} we prove that the guarantee in theorem \ref{thm:Online} is achieved by \online. The bound on space is evident from the fact that we are maintaining the matrix $\*M$ in algorithm which contributes $d^{2}$ and returns a sample of size $O(\frac{n^{1-2/p}k}{\epsilon^{-2}}(d+d\log\|\*A\|-\min_{i}\log \|\*a_{i}\|))$. 
+% 
+\subsection{\kernelfilter}
+In this section we give sketch of the proof of theorem \ref{thm:slowOnline}. Here also we use sensitivity based framework to decide sampling probability of each incoming row. The novelty in this algorithm is by reducing the $p$ order tensor problem to a $2$ order tensor. Now we give bound on sensitivity score of every incoming row.
+% 
+\begin{lemma}{\label{lemma:slowOnlineSensitivityBound}}
+ Consider $\*A \in \~R^{n \times d}$ rows are coming in online manner to \kernelfilter. The term $\tilde{l}_{i}$ defined in the algorithm upper bounds the online sensitivity score, i.e. $\sup_{\*x}\frac{|\*a_{i}^{T}\*x|^{p}}{\sum_{j=1}^{i}|\*a_{j}^{T}\*x|^{p}}$
+\end{lemma}
+% 
+The proof is discussed in the appendix~\ref{proof:slowOnlineSensitivityBound}. It gives tighter upper bounds to the sensitivity scores compared to lemma~\ref{lemma:onlineSensitivityBound}. The tightness will be evident when we sum these upper bounds. Next we show with these $\tilde{l}_{i}$'s we can claim the following,
+\begin{lemma}{\label{lemma:slowOnlineGuarantee}}
+ In the \kernelfilter~let $r$ is set as $O(k\sum_{i=1}^{n}\tilde{l}_{i}/\epsilon^{2})$ then for some fixed k-dimensional subspace $\*Q$ the set $\*C$ with probability 0.9 $\forall \*x \in \*Q$ satisfies tensor contraction as in equation \eqref{eq:contract} and $\ell_{p}$ subspace embedding as in equation \eqref{eq:lp}.
+%  $$|\sum_{\hat{\*a}_{i}\in\*C}(\hat{\*a}_{i}^{T}\*x)^{p} - \sum_{i\leq n} (\*a_{i}^{T}\*x)^{p}| \leq \sum_{i\leq n} |\*a_{i}^{T}\*x|^{p}$$
+\end{lemma}
+% 
+We discuss this in detail in the appendix~\ref{proof:slowOnlineGuarantee}. Next we bound the sum of upper bounds, i.e. $\sum_{i \leq n} \tilde{l}_{i}$.
+\begin{lemma}{\label{lemma:slowOnlineSummationBound}}
+ The $\tilde{l}_{i}$'s used in \kernelfilter~which satisfy lemma \ref{lemma:slowOnlineGuarantee} has
+ $\sum_{i=1}^{n} \tilde{l}_{i}$ is $O(d^{\lceil p/2 \rceil}(1+\lceil p/2 \rceil\log \|\*A\|) - \lfloor p/2 \rfloor\min_{i}\log \|\*a_{i}\|)$.
+\end{lemma}
+% 
+We discuss the proof in detail in the appendix~\ref{proof:slowOnlineSummationBound}. The proof of the above lemma is similar to that of lemma \ref{lemma:onlineSummationBound}. It implies that the lemma \ref{lemma:slowOnlineSensitivityBound} gives tighter sensitivity bounds compared to lemma \ref{lemma:onlineSensitivityBound}. 
+
+With lemmas \ref{lemma:slowOnlineSensitivityBound}, \ref{lemma:slowOnlineGuarantee} and \ref{lemma:slowOnlineSummationBound} we prove that the guarantee in theorem \ref{thm:slowOnline} is achieved by algorithm \ref{alg:slowOnline}. The bound on space required is evident from the fact that we are maintaining a $d^{p/2} \times d^{p/2}$ matrix for even $p$ hence working space is $O(d^p)$ and for odd value of $p$ it is $O(d^{p+1})$ because the algorithm maintains a $d^{\lceil p/2 \rceil} \times d^{\lceil p/2 \rceil}$ matrix. 

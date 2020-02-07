@@ -1,0 +1,191 @@
+%%%%%%%% ICML 2020 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
+
+\documentclass{article}
+
+% Recommended, but optional, packages for figures and better typesetting:
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{booktabs} % for professional tables
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm} % for proofs
+% \allowdisplaybreaks
+
+% hyperref makes hyperlinks in the resulting PDF.
+% If your build breaks (sometimes temporarily if a hyperlink spans a page)
+% please comment out the following usepackage line and replace
+% \usepackage{icml2020} with \usepackage[nohyperref]{icml2020} above.
+\usepackage{hyperref}
+
+% Attempt to make hyperref and algorithmic work together better:
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% Use the following line for the initial blind version submitted for review:
+\usepackage{icml2020}
+
+% If accepted, instead use the following line for the camera-ready submission:
+%\usepackage[accepted]{icml2020}
+
+% For notations
+\def\~#1{\mathbb{#1}}
+\def\*#1{\mathbf{#1}}
+\newcommand{\mcal}[1]{\mathbf{\mathcal{#1}}}
+\newcommand\norm[1]{\left\lVert#1\right\rVert}
+
+\def\online{{\texttt{LineFilter}}}
+\def\mr{{\texttt{MergeReduce}}}
+\def\kernel{{\texttt{Kernel}}}
+\def\kernelfilter{{\texttt{KernelFilter}}}
+\def\mrlw{{\texttt{StreamingLW}}}
+\def\mrwcb{{\texttt{StreamingWCB}}}
+\def\mrfc{{\texttt{StreamingFC}}}
+\def\uni{{\texttt{Uniform}}}
+\def\stream{{\texttt{Streaming}}}
+
+% For Theorem and Lemmas
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+
+% The \icmltitle you define below is probably too long as a header.
+% Therefore, a short form for the running title is supplied here:
+\icmltitlerunning{Streaming Coresets for Symmetric Tensor Factorization}
+
+\begin{document}
+
+\twocolumn[
+\icmltitle{Streaming Coresets for Symmetric Tensor Factorization}
+
+% It is OKAY to include author information, even for blind
+% submissions: the style file will automatically remove it for you
+% unless you've provided the [accepted] option to the icml2020
+% package.
+
+% List of affiliations: The first argument should be a (short)
+% identifier you will use later to specify author affiliations
+% Academic affiliations should list Department, University, City, Region, Country
+% Industry affiliations should list Company, City, Region, Country
+
+% You can specify symbols, otherwise they are numbered in order.
+% Ideally, you should not use this facility. Affiliations will be numbered
+% in order of appearance and this is the preferred way.
+\icmlsetsymbol{equal}{*}
+
+\begin{icmlauthorlist}
+\icmlauthor{Aeiau Zzzz}{equal,to}
+\icmlauthor{Bauiu C.~Yyyy}{equal,to,goo}
+\icmlauthor{Cieua Vvvvv}{goo}
+\icmlauthor{Iaesut Saoeu}{ed}
+\icmlauthor{Fiuea Rrrr}{to}
+\icmlauthor{Tateu H.~Yasehe}{ed,to,goo}
+\icmlauthor{Aaoeu Iasoh}{goo}
+\icmlauthor{Buiui Eueu}{ed}
+\icmlauthor{Aeuia Zzzz}{ed}
+\icmlauthor{Bieea C.~Yyyy}{to,goo}
+\icmlauthor{Teoau Xxxx}{ed}
+\icmlauthor{Eee Pppp}{ed}
+\end{icmlauthorlist}
+
+\icmlaffiliation{to}{Department of Computation, University of Torontoland, Torontoland, Canada}
+\icmlaffiliation{goo}{Googol ShallowMind, New London, Michigan, USA}
+\icmlaffiliation{ed}{School of Computation, University of Edenborrow, Edenborrow, United Kingdom}
+
+\icmlcorrespondingauthor{Cieua Vvvvv}{c.vvvvv@googol.com}
+\icmlcorrespondingauthor{Eee Pppp}{ep@eden.co.uk}
+
+% You may provide any keywords that you
+% find helpful for describing your paper; these are used to populate
+% the "keywords" metadata in the PDF but will not be shown in the document
+\icmlkeywords{Tensor, Factorization, Subspace Embedding, Online, Streaming, Lp}
+
+\vskip 0.3in
+]
+
+% this must go after the closing bracket ] following \twocolumn[ ...
+
+% This command actually creates the footnote in the first column
+% listing the affiliations and the copyright notice.
+% The command takes one argument, which is text to display at the start of the footnote.
+% The \icmlEqualContribution command is standard text for equal contribution.
+% Remove it (just {}) if you do not need this facility.
+
+%\printAffiliationsAndNotice{}  % leave blank if no need to mention equal contribution
+\printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
+
+\begin{abstract}
+Factorizing tensors has recently become an important optimization module in a number of machine learning pipelines, especially in latent variable models. We show how to do this efficiently in the streaming setting. Given a set of $n$ vectors, each in $\~R^d$, we present algorithms to select a sublinear number of these vectors as coreset, while guaranteeing that the CP decomposition of the $p$-moment tensor of the coreset approximates the corresponding decomposition of the $p$-moment tensor computed from the full data. We introduce two novel algorithmic techniques: online filtering and kernelization. Using these two, we present four algorithms that achieve different tradeoffs of coreset size, update time and working space, beating or matching various state of the art algorithms. In case of matrices (2-ordered tensor) our online row sampling algorithm guarantees $(1 \pm \epsilon)$ relative error spectral approximation. We show applications of our algorithms in learning single topic modeling. 
+% Based on the application, from the input data one can create a $p-$order tensor ${\mcal T} = \sum_i \*a_{i}\otimes^{p}$, $p \ge 2$, and find its decomposed factors. Instead it can be found by factorizing the tensor created using vectors in $\*C$ only, and it has a guaranteed approximation (additive for odd $p$ and relative for even). 
+% 
+%Our online algorithm returns similar complexity as the state of the art offline sampling complexity.
+%In case of matrices (2-ordered tensor) our online row sampling algorithm guarantees $(1 \pm \epsilon)$ relative error spectral approximation. %with $O(\frac{d\log d}{\epsilon^{2}}(1+2\log\|\*A\|))$ rows. 
+% We demonstrate the performance of our algorithm empirically compared to other sampling strategies. 
+% 
+% We apply our method for single topic modeling for a document stream and streaming version of Gaussian mixture model to compare the performance of our algorithm with other sampling sampling strategies.
+\end{abstract}
+
+\input{sections/introduction.tex}
+\input{sections/preliminary.tex}
+\input{sections/related.tex}
+\input{sections/algorithm.tex}
+\input{sections/proofs.tex}
+\input{sections/application.tex}
+% \input{sections/experiment.tex}
+% \input{sections/conclusion.tex}
+
+
+% In the unusual situation where you want a paper to appear in the
+% references without citing it in the main text, use \nocite
+% \nocite{langley00}
+
+\bibliography{refer}
+\bibliographystyle{icml2020}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% DELETE THIS PART. DO NOT PLACE CONTENT AFTER THE REFERENCES!
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+
+\appendix
+\input{sections/appendix.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
+
+% Factorizing tensors has recently become an important optimization module in a number of machine learning pipelines, especially in latent variable models. We show how to do this efficiently in the streaming setting. Given a set of $n$ vectors, each in $R^d$, we present algorithms to 
+% select a sublinear number of these vectors as coreset, while guaranteeing that the CP decomposition of the p-moment tensor of the coreset approximates the corresponding decomposition of the $p$-moment tensor computed from the full data. We introduce two novel algorithmic techiques: online filtering and kernelization. Using these two, we  
+% present four algorithms that achieve different tradeoffs of coreset size, update time and working space, beating or matching various state of the art algorithms. In case of matrices (2-ordered tensor) our online row sampling algorithm guarantees $(1 \pm \epsilon)$ relative error spectral approximation. We show applications of our algorithms in learning Gaussian mixture models and topic modeling. 
+
+
+
+% \begin{table*}[]
+% \begin{tabular}{|l|l|l|l|}
+% \hline
+% Algorithm & Sample Size $\tilde{O}(\cdot)$            & Update time                     & Working space\\
+% \hline\hline
+% \mrwcb~\cite{dasgupta2009sampling} & $\tilde{O}(d^{p}k\epsilon^{-2})$  & $O(d^{5}p\log d)$ & $\tilde{O}(d^{p}k\epsilon^{-2})$ \\
+% \hline
+% \mrlw~\cite{cohen2015p} & $\tilde{O}(d^{p/2}k\epsilon^{-5})$  & $O(d^{p/2})$ & $\tilde{O}(d^{p/2}k\epsilon^{-5})$ \\
+% \hline
+% \mrFC \cite{clarkson2016fast} & $\tilde{O}(d^{p/2}k\epsilon^{-5})$  & $O(d^{p/2})$ & $\tilde{O}(d^{p/2}k\epsilon^{-5})$ \\
+% \hline
+% \hline
+% \online$(p)$ (Theorem~\ref{thm:Online}) & $\tilde{O}(n^{1-2/p}dk\epsilon^{-2})$ & $O(d^{2})$ & $O(d^2)$ \\
+% \hline
+% \online$(p)$ + \mrlw (Theorem~\ref{thm:improvedStream-MR}) & $\tilde{O}(d^{p/2}k\epsilon^{-5})$ & $O(d^{2})$ amortized & $\tilde{O}(d^{p/2}k\epsilon^{-5})$
+% %$O((1-2/p)^{10}d^{p/2}k(\log n)^{10}\epsilon^{-5})$
+% %$O((1-2/p)^{11}d^{p/2}k(\log n)^{11}\epsilon^{-5})$
+% \\
+% \hline
+% \kernel-\online$(2)$ (Theorem~\ref{thm:slowOnline}) & $\tilde{O}(d^{(p+1)/2}k\epsilon^{-2})$ & $O(d^{p})$ & $O(d^{p+1})$ \\
+% \hline
+% \online$(p)$-\kernel-\online$(2)$ (Theorem~\ref{thm:improvedOnlineCoreset}) & $\tilde{O}(d^{(p+1)/2}k\epsilon^{-2})$ & $O(d^{2})$ amortized & $O(d^{p+1})$ \\
+% \hline 
+
+% \end{tabular}
+% \end{table*}

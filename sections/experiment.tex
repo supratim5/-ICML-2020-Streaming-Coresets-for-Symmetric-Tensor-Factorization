@@ -1,0 +1,55 @@
+\subsection{Single Topic Model}\label{exp}
+Here we empirically show how sampling using \online+\kernelfilter~can preserve tensor contraction as in equation \eqref{eq:contract}. This can be used in single topic modeling where documents are coming in streaming manner. We compare our method with 2 other sampling schemes, namely -- uniform and online leverage scores which we call \online$(2)$.
+
+% \textbf{Real dataset:} We used a subset of 20 Newsgroups data(pre-processed). We took a subset of 8k documents and considered the 50 most frequent words. We normalized each document vector to $\ell_{1}=1$ and ran Algorithm \ref{alg:onlineCoreset} with $p=3$ on it. Next we created $\mathcal{T}$ and $\hat{\mathcal{T}}$ as defined above and we report $|\mathcal{T}(\*x,\*x,\*x) - \hat{\mathcal{T}}(\*x,\*x,\*x)|/(|\mathcal{T}(\*x,\*x,\*x)|)$ values of the different algorithms. In order to capture the query $\mathbf{x}$ which will be ``most affected'' (i.e. have high variance) due to sampling, we chose $\mathbf{x}$ as the right singular vector corresponding to the smallest singular value of the above mentioned dataset. Here the sample size is over expectation.
+\textbf{Real dataset:} We used a subset of 20Newsgroups data(pre-processed). We took a subset of 10k documents and considered the 100 most frequent words. We normalized each document vector to $\ell_{1}$ norm $1$ and created a matrix $\*A \in \~R^{10k \times 100}$. We feed its row at a time to \online+\kernelfilter with $p=3$, which returns a coreset $\*C$. For a dataset with 12 topics, we run tensor based single topic modeling~\cite{anandkumar2014tensor} on $\*A$ and $\*C$, which returns 12 topic distributions for both. Next we take the best matching between empirical and estimated topics based on $\ell_{1}$ distance and  compute the average $\ell_{1}$ difference between them. We run this entire method 5 times and report the median of the $\ell_{1}$ differences. Here the coreset sizes are over expectation.
+
+\begin{table}[htbp]
+ \caption{20NewsGroup-Single Topic Modeling}
+ \label{tab:empCompare}
+ \vskip 0.1in
+ \begin{center}
+  \begin{scriptsize}
+   \begin{sc}
+    \begin{tabular}{|c|c|c|c|}
+     \hline
+     Sample & \uni & \online$(2)$ & \online\\
+     & & & +\kernelfilter \\
+     \hline
+     50 & 0.5725 & 0.6903 & \textbf{0.5299}  \\
+     \hline
+     100 & 0.5093 & 0.6385 & \textbf{0.4379} \\
+     \hline
+     200 & 0.4687 & 0.5548 & \textbf{0.3231} \\
+     \hline
+     500 & 0.3777 & 0.3992 & \textbf{0.2173} \\
+     \hline
+     1000 & 0.2548 & 0.2318 & \textbf{0.1292} \\
+     \hline
+    \end{tabular} % &
+   \end{sc}
+  \end{scriptsize}
+ \end{center}
+ \vskip -0.1in
+\end{table}
+% The expected size of the coreset is controlled by parameter $r$ of the algorithm. Next we created $\mcal T = \sum_{i=1}^{n} \*W\*a \otimes^{3}$ and $\widetilde{\mcal T} = \sum_{\tilde{\*a}_{i} \in \*C} \*W\tilde{\*a}_{i}\otimes^{3}$. as defined above and we report $|\mathcal{T}(\*x,\*x,\*x) - \hat{\mathcal{T}}(\*x,\*x,\*x)|/(|\mathcal{T}(\*x,\*x,\*x)|)$ values of the different algorithms. In order to capture the query $\mathbf{x}$ which will be ``most affected'' (i.e. have high variance) due to sampling, we chose $\mathbf{x}$ as the right singular vector corresponding to the smallest singular value of the above mentioned dataset. Here the sample size is over expectation.
+% \begin{table}[htbp]
+%     \centering
+%     \begin{tabular}{|c|c|c|c|}
+%         \hline
+%         Sample & Uniform & Leverage & Sensitivity \\
+%         \hline
+%         200 & 3.306 & 1.357 & \textbf{1.003}  \\
+%         \hline
+%         350 & 2.045 & 0.925 & \textbf{0.921} \\
+%         \hline
+%         450 & 1.212 & 1.119 & \textbf{0.735} \\
+%         \hline
+%         600 & 2.852 & 1.223 & \textbf{0.647} \\
+%         \hline
+%     \end{tabular} % &
+%     \caption{Tensor contraction on 20 Newsgroups dataset. \\(The numbers reported are the average of 10 experiments for each sample size.)}
+%     \label{tab:realData}
+% \end{table}
+It can be seen from the tables, that our algorithm \online+\kernelfilter~performs better or at par with both uniform and \online$(2)$ thus supporting our theoretical claims. 
+% There are no theoretical claims for leverage score sampling for tensor factorization.

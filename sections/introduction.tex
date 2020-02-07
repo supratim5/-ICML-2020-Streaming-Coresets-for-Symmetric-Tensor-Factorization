@@ -1,0 +1,95 @@
+\section{Introduction}
+Much of the data that is consumed in data mining and machine learning applications arrives in a streaming manner. The data is conventionally treated as a matrix, with a row representing a single data point and the columns its corresponding features. Since the matrix is typically large, it is advantageous to be able to store only a small number of rows and still preserve some of its ``useful" properties. One such abstract property that has proven useful in a number of different settings, such as solving regression, finding various factorizations, is {\em subspace preservation}. Given a matrix $\*A \in \~R^{n \times d}$ an $m \times d$ matrix $\*C$ is subspace preserving for the $\ell_2$ norm if, $\forall \*x \in \~R^{d}$,
+\begin{align*}
+    \big| \sum_{\tilde{\*a}_{j} \in \*C}(\tilde{\*a}_{j}^T \*x)^2 - \sum_{i \in [n]}(\*a_{i}^T \*x)^2\big|\leq\epsilon \cdot \sum_{i \in [n]}(\*a_{i}^T \*x)^2
+\end{align*}
+% where each $\mathbf{\hat{a}_i}$ is an appropriately scaled version of $\*a_{i}$. 
+We typically desire $m \ll n$ and $\tilde{\*a}_{j}$'s represent the subsampled and rescaled rows from $\*A$. Such a sample $\*C$ is often referred to as a coreset.
+This property has been used to obtain approximate solutions to many problems such as regression, low rank approximation etc.~\cite{woodruff2014sketching}, while having $m$ to be at most $O(d^2)$. Such property has been defined for other $\ell_p$ norms too \cite{dasgupta2009sampling,cohen2015p,clarkson2016fast}. 
+
+Matrices are ubiquitous and depending on the application one can assume that the data is coming from a generative model, i.e. there is some distribution from which every incoming row is sampled and given to user. Many a times the goal is to know the hidden variables of this generative model. An obvious way to learn these variables is by representing data(matrix) by its low rank representation. However we know that a low rank representation of a matrix is not unique as there are various (such as SVD, QR, LRU) ways to decompose a matrix. So the hidden variables are not clear just by the low rank decomposition of the matrix form of the dataset.
+% Instead for a dataset $\*A \in \~R^{n \times d}$ one can use a $p$ order tensor $\mcal T \~R^{d \times \ldots \times d}$ as $\mcal T = \sum_{i=1}^{n} \*a_{i} \otimes^{p}$, where $p$ is set by user depending the number of latent variables one is expecting in the generative model\cite{ma2016polynomial}. These are also called higher order moments of the dataset. The decomposition of such tensors are unique under a mild assumption. 
+This is one of the reasons to look at higher order moments of the data i.e. tensors. Tensors are formed by outer product of data vectors, i.e. for a dataset $\*A \in \~R^{n \times d}$ one can use a $p$ order tensor $\mcal T \in \~R^{d \times \ldots \times d}$ as $\mcal T = \sum_{i=1}^{n} \*a_{i} \otimes^{p}$, where $p$ is set by user depending on the number of latent variables one is expecting in the generative model~\cite{ma2016polynomial}. The decomposition of such a tensor is unique under a mild assumption~\cite{kruskal1977three}. 
+Factorization of tensors into its constituent elements has found uses in topic modeling~\cite{anandkumar2014tensor}, various latent variable models~\cite{anandkumar2012method,hsu2012spectral,jenatton2012latent}, training neural networks~\cite{janzamin2015beating} etc. 
+
+For a $p$-order moment tensor $\mcal T = \sum_i \*a_{i}\otimes^p$ created using the set of vectors $\{\*a_{i}\}$ and for $\*x \in \~R^{d}$ one of the important property one needs to preserve is $\mcal T(\*x, _{\cdots}, \*x) = \sum_{i} (\*a_{i}^{T}\*x)^{p}$. This operation is also called tensor contraction \cite{song2016sublinear}. Now if we wish to ``approximate" it using only a subset of the vectors $\*A$, the above property for $\ell_2$ norm subspace preservation does not suffice. %What suffices, however, is a guarantee that is similar (not same) to that needed for the $\ell_p$ subspace preservation.  
+
+For tensor factorization, which is performed using power iteration, a coreset $\*C \subset \bigcup_{i}\{\*a_{i}\}$, in order to give a guaranteed approximation to the tensor factorization, needs to satisfy the following natural extension of the $\ell_2$ subspace preservation condition:
+\begin{align*}
+\sum_{\*a_{i} \in \*A}({\*a_{i}}^T \*x)^p \approx \sum_{\tilde{\*a}_{j} \in \*C}({\tilde{\*a}_{j}}^T \*x)^p
+\end{align*}
+ Ensuring this tensor contraction property enables one to approximate the CP decomposition of $\mcal T$ using only the vectors $\tilde{\*a}_{i}$'s via power iteration method~\cite{anandkumar2014tensor}. A related notion is that of $\ell_p$ subspace embedding where we need that $\*C$ satisfies the following, $\forall \*x\in \~R^{d}$
+\begin{align*}
+\sum_{\*a_{i} \in \*A}|{\*a_{i}}^T \*x|^p \approx \sum_{\tilde{\*a}_{j} \in \*C}|{\tilde{\*a}_{j}}^T \*x|^p
+\end{align*}
+% This property ensures that we can approximate the $\ell_p$ regression problem by using only the rows in $\*C$. 
+The two properties are the same for even $p$, as it is just sum of non negative terms. Due to the same reason they differ for odd values of $p$.
+
+In this work, we show that it is possible to create coresets for the above property in streaming and restricted streaming ({\em online}) setting. In restricted streaming setting an incoming point, when it arrives, is either chosen in the set or discarded forever. We consider the following formalization of the above two properties. Given a query space of vectors $\*Q\subseteq \~R^{d}$ and $\epsilon > 0$, we aim to choose a set $\*C$ which contains sampled and rescaled rows from $\*A$ to ensure that $\forall \*x \in \*Q$ with probability at least $0.9$, the following properties hold,
+\begin{align}
+    \big|\sum_{\tilde{\*a}_{j} \in \*C}(\tilde{\*a}_{j}^T\*x)^p - \sum_{i \in [n]}(\*a_{i}^T \*x)^p\big| \leq \epsilon \cdot \sum_{i \in [n]}|\*a_{i}^T \*x|^p  \label{eq:contract} \\
+    \big|\sum_{\tilde{\*a}_{j} \in \*C}|\tilde{\*a}_{j}^T\*x|^p - \sum_{i \in [n]}|\*a_{i}^T \*x|^p\big| \leq \epsilon \cdot \sum_{i \in [n]}|\*a_{i}^T \*x|^p  \label{eq:lp}
+\end{align}
+Note that neither property follows from the other. For even values of $p$, the above properties are identical and imply a relative error approximation as well. Where as for odd values of $p$, the $\ell_{p}$ subspace embedding as equation \eqref{eq:lp} gives a relative error approximation but the tensor contraction as equation \eqref{eq:contract} implies an additive error approximation, which becomes relative error under non-negativity constraints on $\*a_{i}$ and $\*x$. This happens, for instance, for the important use case of topic modeling, where $p=3$ typically.
+% For even value of $p$ the above property ensures relative error approximation, where as for odd value of $p$ the above property give additive error approximation.
+% 
+\paragraph{Our Contributions:}
+We give a method to sample rows in streaming manner for a $p$ order tensor, which is further decomposed to know the latent factors. For a given a matrix $\*A \in \~R^{n \times d}$, a $k$-dimensional query space $\*Q \in \~R^{k \times d}$, some integer $p \geq 2$ and $\epsilon > 0$,
+\begin{itemize}
+%    \item We show that in the offline setting, for any value of $p$, there exists a sample of appropriately reweighted rows of $\*A$ which satisfy equation \eqref{eqn1}. It can be achieved using well conditioned basis for $p$ norm. The size of sample is $\tilde{O}(\frac{d^{p}k}{\epsilon^{2}}\log(1/\delta))$ where $k$ is the dimension of the query space.
+    \item We give an algorithm (\online) that is able to select rows, it takes $O(d^2)$ update time, and returns a sample of size $O(\frac{n^{1-2/p} k}{\epsilon^{2}} (d+d\log\|\*A\| - \min_{i}\log\|\*a_{i}\|))$ such that the set of selected rows form a coreset having the guarantees stated in equations ~\eqref{eq:contract} and \eqref{eq:lp} (Theorem~\ref{thm:Online}). It is streaming algorithm but also works well in the restricted streaming (online) setting.
+% either a single row $\hat{\*a}_i$ (for $p$ even) or 
+    \item We improve the sampling complexity of our coreset to $O(d^{p/2}k(\log n)^{10}\epsilon^{-5})$ by a streaming algorithm (\online+\mrlw) with amortized update time $O(d^2)$ (Theorem~\ref{thm:improvedStream-MR}). It requires slightly higher working space $O(d^{p/2}k(\log n)^{11}\epsilon^{-5})$.
+    % 
+    \item We present a kernelization technique which, for any vector $\*v$, creates two vectors $\grave{\*v}$ and $\acute{\*v}$ such that for any $\*x, \*y \in \~R^{d}$,
+    $$|\*x^T \*y|^p = |\grave{\*x}^T \grave{\*y}|\cdot|\acute{\*x}^T \acute{\*y}|$$
+    Using this technique, we give an algorithm (\kernelfilter) which takes $O(nd^{p+1})$ time and samples $O(\frac{k}{\epsilon^{2}} (d^{\lceil p/2 \rceil}+\lceil p/2 \rceil d^{\lceil p/2 \rceil}\log\|\*A\| - \lfloor p/2 \rfloor\min_{i}\log\|\*a_{i}\|))$ vectors to create a coreset having the same guarantee as~\eqref{eq:contract} and \eqref{eq:lp} (Theorem~\ref{thm:slowOnline}). The update time of the algorithm is $O(d^{p+1})$ and it requires an additional working space of $O(d^{p+1})$. It is streaming algorithm but also works well in the restricted streaming (online) setting.
+    % 
+    \item We combine both online algorithms and propose another algorithm (\online+\kernelfilter) which just takes $O(d^2)$ update time and returns $O(\frac{k}{\epsilon^{2}} (d^{\lceil p/2 \rceil}+\lceil p/2 \rceil d^{\lceil p/2 \rceil}\log\|\*A\| - \lfloor p/2 \rfloor\min_{i}\log\|\*a_{i}\|))$ vectors as coreset with same guarantees as equation~\eqref{eq:contract} and ~\eqref{eq:lp} (Theorem~\ref{thm:improvedOnlineCoreset}). This uses $O(d^{p+1})$ working space.
+    % \item We give a communication complexity based lower bound (Theorem ~\ref{thm:lowerBound}) to prove that {\em any} one pass algorithm that creates a coreset having the same guarantee as~\eqref{eq:contract} or \eqref{eq:lp}, must use at least $\Omega(n^{1-2/p}/\log(n))$ rows.
+    % 
+    \item For the $p=2$ case, both \online~and \online+\kernelfilter~translate to an online algorithm for sampling rows of the matrix $\*A$, while guaranteeing a {\em relative error} spectral approximation (Theorem~\ref{thm:improvedMatrixCoreset}). This is an improvement (albeit marginal) over the online row sampling result by~\cite{cohen2016online}. The additional benefit of this new online algorithm over~\cite{cohen2016online} is that it does not need knowledge of $\sigma_{\min}(\*A)$ to give a relative error approximation. 
+    % \item In case of matrix we also show that our sampling complexity is tight in terms of $O(d\log (\|\*A\|_{2})/\epsilon^{2})$.
+\end{itemize}
+The rest of this paper is organized as follows: In section \ref{sec:prelimnary}, we look at some preliminaries for tensors and coresets. We also describe the notation used throughout the paper. Section \ref{sec:related} discusses related work. In section \ref{sec:algorithms}, we state all the 4 streaming algorithms we propose. We also show how our problem of preserving tensor contraction relates to preserving $\ell_{p}$ subspace embedding. In section \ref{sec:proofs} we describe the guarantees given by our algorithm and some proofs. 
+% The section ends with the lower bound and its proof. 
+In section \ref{sec:topic}, we describe how our algorithm can be used in case of streaming single topic modeling. We also show some empirical results that compare our sampling scheme with other schemes. Proofs of most of the supporting lemmas have been delegated to the appendix~\ref{sec:appendix}, available in the supplementary material.
+% The rest of this paper is organized as follows: In section 2, we look at some preliminaries for tensors and coresets. We also describe the notation used in the paper. Section 3 discusses related work. In section 4, we state all the 4 streaming algorithms we propose. We also summarizes the guarantees of these algorithms, whose supporting lemma and proofs are discussed in section 5. In section 6, we empirically show our algorithm can be used in streaming single topic modeling. Proofs of most of the supporting lemmas have been delegated to the appendix, available in the supplementary material.
+% 
+\begin{table*}[t]
+\caption{Table Comparing Existing Work and Current Contributions.}
+\label{tab:compare}
+\vskip 0.1in
+\begin{center}
+\begin{small}
+\begin{sc}
+\begin{tabular}{|l|l|l|l|}
+\hline
+Algorithm & Sample Size $\tilde{O}(\cdot)$  & Update time   & Working space $\tilde{O}(\cdot)$\\
+\hline\hline
+\mrwcb~\cite{dasgupta2009sampling} & $d^{p}k\epsilon^{-2}$  & $d^{5}p\log d$ & $d^{p}k\epsilon^{-2}$ \\
+\hline
+\mrlw~\cite{cohen2015p} & $d^{p/2}k\epsilon^{-5}$  & $d^{p/2}$ & $d^{p/2}k\epsilon^{-5}$ \\
+\hline
+\mrfc~\cite{clarkson2016fast} & $d^{7p/2}\epsilon^{-2}$  & $d$ & $d^{7p/2}\epsilon^{-2}$ \\
+\hline
+\stream~\cite{dickens2018leveraging} & $n^{\gamma}d\epsilon^{-2}$  & $n^{\gamma}d^{5}$ & $n^{\gamma}d$ \\
+\hline
+\hline
+\online~(Theorem~\ref{thm:Online}) & $n^{1-2/p}dk\epsilon^{-2}$ & $d^{2}$ & $d^2$ \\
+\hline
+\online+\mrlw~(Theorem~\ref{thm:improvedStream-MR}) & $d^{p/2}k\epsilon^{-5}$ & $d^{2}$ amortized & $d^{p/2}k\epsilon^{-5}$
+%$O((1-2/p)^{10}d^{p/2}k(\log n)^{10}\epsilon^{-5})$
+%$O((1-2/p)^{11}d^{p/2}k(\log n)^{11}\epsilon^{-5})$
+\\
+\hline
+\kernelfilter~(Theorem~\ref{thm:slowOnline}) & $d^{\lceil p/2 \rceil}k\epsilon^{-2}$ & $d^{p}$ & $d^{p+1}$ \\
+\hline
+\online+\kernelfilter~(Theorem~\ref{thm:improvedOnlineCoreset}) & $d^{\lceil p/2 \rceil}k\epsilon^{-2}$ & $d^{2}$ amortized & $d^{p+1}$ \\
+\hline 
+\end{tabular}
+\end{sc}
+\end{small}
+\end{center}
+\vskip -0.1in
+\end{table*}
